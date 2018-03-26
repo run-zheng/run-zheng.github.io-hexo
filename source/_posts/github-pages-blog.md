@@ -2,8 +2,8 @@
 
 title: 使用github pages搭建个人博客     
 date: 2018-03-14 00:22:36
-tags: github pages
-categories: github,github pages
+tags: [github,github pages]
+categories: github 博客
 
 ---
    

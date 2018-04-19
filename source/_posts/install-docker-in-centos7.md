@@ -91,7 +91,7 @@ docker run hello-world
 a. 创建目录并保存vagrantfile到目录中
 b. 运行vagrant up命令，并耐心等待几分钟，中间需要升级包和内核、安装docker， 过程会比较久，是网速而定。 
 
-====================================Vagrantfile====================================
+====================================[Vagrantfile][3]====================================
 ```
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
@@ -118,8 +118,8 @@ sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/dock
 sudo yum install -y docker-ce
 
 #======================安装方式2=================================
-#安装docker
-#sudo wget -qO- https://get.docker.com | sh
+#安装docker 
+#sudo wget -qO- https://get.docker.com | sh 
 #======================安装完成==================================
 
 #设置docker服务启动后自运行 启动docker服务
@@ -131,13 +131,22 @@ sudo echo "====set docker manager port and mirror start===="
 sudo sed -i -e 's!^ExecStart=/usr/bin/dockerd!ExecStart=/usr/bin/dockerd -H tcp://0.0.0.0:2375 -H unix:///var/run/docker.sock -H tcp://0.0.0.0:7654 --registry-mirror=https://docker.mirrors.ustc.edu.cn!' /lib/systemd/system/docker.service
 sudo echo "====set docker manager port and mirror end====" && sudo systemctl daemon-reload
 
-sudo echo 'export DOCKER_HOST=tcp://0.0.0.0:2375' >> /etc/profile
+sudo echo 'export DOCKER_HOST=tcp://0.0.0.0:2375' >> /etc/profile  
 sudo echo "====docker host====" && source /etc/profile
 
 sudo systemctl restart docker
 
 #添加vagrant用户添加到docker权限组
-sudo usermod -aG docker vagrant
+sudo usermod -aG docker vagrant 
+
+#默认的公钥在启动的时候会被移除（在vagrant up的时候可以看到下面的提示信息），如果需要自己生产公私钥，去掉这一行
+#default: Vagrant insecure key detected. Vagrant will automatically replace
+#default: this with a newly generated keypair for better security.
+#default:
+#default: Inserting generated public key within guest...
+#default: Removing insecure key from the guest if it's present...
+#default: Key inserted! Disconnecting and reconnecting using new SSH key...
+curl https://raw.githubusercontent.com/mitchellh/vagrant/master/keys/vagrant.pub >> /home/vagrant/.ssh/authorized_keys
 
 #测试docker安装结果  查看安装版本
 docker -v
@@ -197,3 +206,4 @@ vagrant ssh
 
   [1]: install-docker-in-centos7/docker-run-hello-world.png
   [2]: install-docker-in-centos7/after_install.png
+  [3]: Vagrantfile

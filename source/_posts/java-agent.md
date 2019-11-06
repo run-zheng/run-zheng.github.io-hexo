@@ -61,17 +61,17 @@ import java.lang.instrument.Instrumentation;
 
 public class Agent {
     public static void premain(String args, Instrumentation inst){
-        System.out.println("================================Java Agent premain instrument======================");
-        System.out.println("Agent  args: " + args);
+        System.out.println(agent);
+        System.out.println(agent + args);
         System.out.println("isRetransformClassesSupported: " + inst.isRetransformClassesSupported());
         System.out.println("isRedefineClassesSupported: " + inst.isRedefineClassesSupported());
         System.out.println("isNativeMethodPrefixSupported: " + inst.isNativeMethodPrefixSupported());
-        System.out.println("Agent's ClassLoader:  " + Agent.class.getClassLoader().getClass().getName());
+        System.out.println(agent + Agent.class.getClassLoader().getClass().getName());
     }
 
     public static void premain(String args){
-        System.out.println("================================Java Agent premain======================");
-        System.out.println("Agent  args: " + args);
+        System.out.println(agent);
+        System.out.println(agent + args);
     }
 }
 ```
@@ -84,7 +84,7 @@ Premain-Class就是用来指定入口类的配置项。
 
 ```yaml
 Manifest-Version: 1.0
-Premain-Class: org.demo.java.agent.Agent
+Premain-Class: agent
 
 ```
 注意MANIFEST.MF最后有一个空行。 

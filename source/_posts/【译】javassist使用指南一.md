@@ -23,12 +23,14 @@ Javassist(Java Programming Assistant)让Java字节码操纵变得简单。
 Javassist是一个处理字节码的类库。Java的字节码存储在二进制的类文件中。每个类文件包含一个类或接口。 
 Javassist.CtClass是类文件的抽象表示。一个CtClass(compile-time class编译时类)对象是处理类文件的一个句柄。
 下列是个简单的示例： 
+
 ```java
 ClassPool cp = ClassPool.getDefault();
 CtClass cc = cp.get("test.Rectangle");
 cc.setSuperclass(cp.get("test.Point"));
 cc.writeFile();
 ```
+
 这段代码首先获取一个ClassPool对象，用来在Javassist中控制字节码的修改。 
 ClassPool对象是CtClass对象的容器，CtClass对象是类文件的抽象表示。 
 ClassPool对象根据需要读取类文件创建CtClass对象，并且记录创建的CtClass对象以便后续访问。
@@ -72,6 +74,7 @@ public class test.Rectangle extends test.Point {
 writeFile()方法用来将CtClass对象转换成类文件并写入到本地磁盘。 
 Javassist也提供了一个直接获取CtClass对象被修改过的字节码。 
 获取字节码可以通过调用toBytecode()： 
+
 ```java
 byte[] b = cc.toBytecode(); 
 ```
@@ -89,10 +92,12 @@ toClass()方法要求有一个上下文ClassLoader，以便当前线程加载CtC
 ## 1、定义新类
 
 要从无到有定义一个新类，必须调用ClassPool的makeClass()方法。 
+
 ```java
 ClassPool pool = ClassPool.getDefault();
 CtClass cc = pool.makeClass("Point");
 ```
+
 上述例子定义了一个类Point，没有成员信息。 
 Point的成员方法可以通过CtNewMethod声明的工厂方法创建，然后通过CtClass的addMethod方法添加到Point类中。 
 
@@ -108,6 +113,7 @@ makeClass()不能创建一个接口。
 这是为了警告开发人员，他们修改的类文件已经被加载， JVM不允许修改已加载的类。 
 
 一个被冻结的CtClass对象可以解冻，解冻后将允许修改该类的定义。比如： 
+
 ```java 
 ClassPool pool = ClassPool.getDefault();
 CtClass cc = pool.makeClass("Rectangle");
@@ -116,6 +122,7 @@ cc.defrost();
 CtClass pcc = pool.makeClass("Point");
 cc.setSuperclass(pcc);
 ```
+
 调用defrost()方法后， CtClass对象将再次可以修改。 
 
 如果ClassPool.doPruning设置为true, 那么Javassist在冻结CtClass对象的时候，会修剪(精简)CtClass对象包含的数据结构。
@@ -136,6 +143,7 @@ cc.setSuperclass(pcc);
 pcc.writeFile();
 cc.writeFile();
 ```
+
 CtClass对象cc未被修剪。因此可以在调用writeFile()后进行解冻。 
 
 ```java
@@ -166,26 +174,30 @@ _ 如果程序运行在JBoss或Tomcat等web应用服务器上，ClassPool对象�
  因为这些web服务器使用多个类加载器（ClassLoader）来加载类，也包括系统类加载器（System ClassLoader）_。
  因此必须将其他类路径注册到ClassPool。假设pool引用的是ClassPool对象，如下： 
 
- ```java
+```java
 pool.inertClassPath(new ClassClassPath(this.getClass()));
 ```
+
 以上语句将加载this所属类对象的类路径注册到ClassPool对象。 
 你可以使用任何类对象作为参数，替代this.getClass()。 
 用于加载该类对象的类路径将被注册到pool中。 
 
 你能够注册一个目录作为类搜索路径。
-如下示例，以下代码会将目录`/usr/local/javalib`加入搜索路径： 
+如下示例，以下代码会将目录`/usr/local/javalib`加入搜索路径：
+ 
 ```java
 ClassPool pool = ClassPool.getDefault(); 
 pool.insertClassPath("/usr/local/javalib"); 
 ```
 
-用户可以加入到类路径中的，不仅仅是目录，URL也可以： 
+用户可以加入到类路径中的，不仅仅是目录，URL也可以：
+ 
 ```java
 ClassPool pool = ClassPool.getDefault();
 ClassPath cp = new URLClassPath("www.javassist.org", "80", "/java/", "org.javassist."); 
 pool.insertClassPath(cp); 
 ```
+
 上述代码，将"http://www.javassist.org:80/java/"加入到类搜索路径中。 
 这个URL仅在搜索属于`org.javassist`包下的类时，会被用到。 
 比如，加载类`org.javassist.test.Main`, 该类文件将会从以下链接获取：
@@ -194,6 +206,7 @@ pool.insertClassPath(cp);
 
 此外，你还可以通过ClassPool对象利用字节码数组创建一个CtClass对象。 
 要做到这一点，必须使用ByteArrayClassPath。如下面例子： 
+
 ```java
 ClassPool cp = ClassPool.getDefault();
 String path = this.getClass().getResource("../../test/Rectangle.class").getPath();
@@ -208,10 +221,12 @@ try(FileChannel channel = new FileInputStream(file).getChannel();){
     cc.writeFile();
 }
 ```
+
 上面例子中，得到的CtClass对象代表的是，由字节码数组bytes定义的类。 
 调用ClassPool对象的get方法时，如果制定的name与设置的ByteArrayClassPath的name匹配，将会从该ByteArrayClassPath读取类文件。
 
-如果你不清楚类全路径名，但可以得到类文件的输入流，可以通过ClassPoll的makeClass方法得到CtClass对象： 
+如果你不清楚类全路径名，但可以得到类文件的输入流，可以通过ClassPoll的makeClass方法得到CtClass对象：
+ 
 ```java
 ClassPool cp = ClassPool.getDefault();
 String path = this.getClass().getResource("../../test/Rectangle.class").getPath();
@@ -221,6 +236,7 @@ try(FileInputStream fis = new FileInputStream(file);){
     cc.writeFile();
 }
 ```
+
 makeClass()方法返回从输入流创建的CtClass对象。 
 你可以使用makeClass()方法将类文件直接加载进ClassPool对象。 
 这种方式在类搜索路径中包含大的jar文件时，可以提升性能。 

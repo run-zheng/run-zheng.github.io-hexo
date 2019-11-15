@@ -24,6 +24,7 @@ ClassPool对象是CtClass对象的容器。
 ClassPool的这种方式在CtClass对象数量非常多的时候，可能会导致巨大的内存消耗（这种情况比较少发生，因为Javassist尝试各种方法去减少内存消耗）。
 为了避免这种问题发生，你可以将一些不需要的CtClass对象从ClassPool移除掉。 
 如果你调用CtClass对象的detach()方法，那么该CtClass将从ClassPool中移除。比如： 
+
 ```java
 CtClass cc = ...; 
 cc.writeFile(); 
@@ -37,10 +38,12 @@ cc.detach();
 另一个方法（避免内存溢出）是用一个新的ClassPool对象替换老的对象，并将老的丢弃。 
 如果一个老的ClassPool对象被垃圾收集，保存在ClassPool中的CtClass对象也将被垃圾收集掉。 
 创建一个新的ClassPool对象，执行以下代码片段即可： 
+
 ```java
 ClassPool cp = new ClassPool(true); 
 //if needed, append an extra search path by appendClassPath() 
 ```
+
 以上创建的ClassPool对象和ClassPool.getDefault()返回的默认ClassPool对象效果是一样的。 
 ClassPool.getDefault()是一个便捷的单例工厂方法。
 它创建的ClassPool对象与上述创建的ClassPool对象的方式一样，只是它保证创建的是一个ClassPool单例，以便重复使用。 
@@ -48,6 +51,7 @@ getDefault()方法返回的ClassPool对象没有什么特别之处。getDefault(
 
 new ClassPool(true)是一个便捷的构造方法，用来创建一个ClassPool对象，并且将系统类搜索路径加入到其中。 
 调用该构造方法等同于以下代码： 
+
 ```java
 ClassPool cp = new ClassPool(); 
 cp.appendSystemPath(); //or append another path by appendClassPath() 
@@ -59,15 +63,18 @@ cp.appendSystemPath(); //or append another path by appendClassPath()
 程序中应该用构造方法创建ClassPool对象，而不是直接调用getDefault()获得对象。
 
 多ClassPool对象可以级联，与`java.lang.ClassLoader`类似。比如： 
+
 ```java
 ClassPool parent = ClassPool.getDefault(); 
 ClassPool child = new ClassPool(parent); 
 child.insertClassPath("./classes"); 
 ```
+
 如果调用child.get()方法，该子ClassPool会首先委托给父ClassPool。 
 如果父ClassPool无法加载对应的类文件，那么子ClassPool会尝试从./classes目录下加载该类文件。 
 
 如果child.childFirstLookup设置成true，子ClassPool会先尝试查找该类文件，未找到才会委托给父ClassPool. 比如：
+
 ```java
 ClassPool parent = ClassPool.getDefault(); 
 ClassPool child = new ClassPool(parent); 
@@ -78,6 +85,7 @@ child.childFirstLookup = true; //changes the behavior of the child.
 ### 3、通过更改类名定义新类 
 
 可以通过拷贝已经存在的类来定义一个新的类。如以下代码所示：
+
 ```java
 ClassPool pool = ClassPool.getDefault(); 
 CtClass cc = pool.get("Point"); 
@@ -93,6 +101,7 @@ setName()方法只是更改了哈希表中key对应CtClass对象的关系。Key�
 因此，调用ClassPool对象的get("Point")方法，返回的将不再是cc引用的CtClass对象。
 ClassPool对象将重新读取Point.class类文件，并重新为Point类创建一个新的CtClass对象。 
 之所以这样，是因为CtClass对象关联的名字Point已经不存在于ClassPool中。 如下所示： 
+
 ```java
 ClassPool cp = ClassPool.getDefault();
 CtClass cc = cp.get("Point");
@@ -104,6 +113,7 @@ assertEquals(cc, cc1);
 assertEquals(cc1, cc2);
 assertNotEquals(cc2, cc3);
 ```
+
 cc1和cc2引用的是相同的CtClass实例，与cc一样，cc3是另外一个实例对象。 
 注意：cc.setName("Pair")执行后，CtClass对象，cc和cc1引用的都都变成Pair类。 
 
@@ -112,30 +122,41 @@ Javassist不允许两个CtClass对象对应相同的类，除非两个CtClass对
 这是保证转换一致性的重要特性。
 
 创建一份默认ClassPool（从ClassPool.getDefault()返回的）实例对象的拷贝，执行以下代码片段（前面已经出现过）：
+
 ```java
 ClassPool cp = new ClassPoo(true); 
-``` 
+
+```
+
 如果你有两个ClassPool对象，你可以从这两个ClassPool对象获取到不一样的CtClass对象对应到相同的类文件。 
 你可以分别修改这两个CtClass对象，并生成两个不同版本的Class类。 
+
 
 ### 4、通过重命名一个冻结类定义新的类
 
 一旦一个CtClass对象通过writeFile()或toBytecode()方法转换成类文件，Javassist拒绝后续的对CtClass对象的修改。 
 因此，Point类的CtClass对象转换成类文件后，因为在Point的CtClass上调用setName()会被拒绝，你不能通过执行setName()拷贝Point重新定义Pair类。
 以下代码是无法运行的： 
+
 ```java
 ClassPool pool = ClassPool.getDefault(); 
 CtClass cc = pool.get("Point"); 
 cc.writeFile(); 
 cc.setName("Pair"); //wrong since writeFile() has bean called. 
+
 ```
-绕开这个限制，你可以调用ClassPool的getAndRename()方法。 比如： 
+
+
+绕开这个限制，你可以调用ClassPool的getAndRename()方法。 比如：
+ 
 ```java
 ClassPool pool = ClassPool.getDefault(); 
 CtClass cc = pool.get("Point"); 
 cc.writeFile(); 
 CtClass cc2 = pool.getAndRename("Point", "Pair"); 
+
 ```
+
 如果调用getAndRename()，ClassPool首先先读取Point.class，创建一个新的CtClass对象对应Point类。 
 但是，在保存到ClassPool的哈希表之前，它将CtClass的名字从Point设置成Pair。 
 因此，getAndRename()能够在Point的CtClass对象调用writeFile()或toBytecode()方法后被执行。 
